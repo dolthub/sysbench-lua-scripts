@@ -41,6 +41,13 @@ function event()
                             "(%d, %d, '%s', '%s')", id, k_val, c_val, pad_val))
 end
 
+function cleanup()
+    local drv = sysbench.sql.driver()
+    local con = drv:connect()
+    print("Dropping table 'sbtest1'")
+    con:query("DROP TABLE IF EXISTS sbtest1")
+end
+
 
 -- 10 groups, 119 characters
 local c_value_template = "###########-###########-###########-" ..
