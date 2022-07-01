@@ -1,4 +1,4 @@
-require("oltp_common")
+require("oltp_common_copy")
 
 function prepare_statements()
 	prepare_delete_inserts()
