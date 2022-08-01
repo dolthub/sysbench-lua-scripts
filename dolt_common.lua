@@ -32,25 +32,15 @@ CREATE TABLE sbtest1 (
 	unsigned_tiny_int_col TINYINT UNSIGNED NOT NULL,
 	small_int_col SMALLINT NOT NULL,
 	unsigned_small_int_col SMALLINT UNSIGNED NOT NULL,
-	medium_int_col MEDIUMINT NOT NULL,
-	unsigned_medium_int_col MEDIUMINT UNSIGNED NOT NULL,
+	medium_int_col INT NOT NULL,
+	unsigned_medium_int_col INT UNSIGNED NOT NULL,
 	int_col INT NOT NULL,
 	unsigned_int_col INT UNSIGNED NOT NULL,
 	big_int_col BIGINT NOT NULL,
 	unsigned_big_int_col BIGINT UNSIGNED NOT NULL,
-	decimal_col DECIMAL NOT NULL,
+
 	float_col FLOAT NOT NULL,
 	double_col DOUBLE NOT NULL,
-	bit_col BIT NOT NULL,
-	char_col CHAR NOT NULL,
-	var_char_col VARCHAR(64) NOT NULL,
-	enum_col ENUM('val0', 'val1', 'val2') NOT NULL,
-	set_col SET('val0', 'val1', 'val2') NOT NULL,
-	date_col DATE NOT NULL,
-	time_col TIME NOT NULL,
-	datetime_col DATETIME NOT NULL,
-	timestamp_col TIMESTAMP NOT NULL,
-	year_col YEAR NOT NULL,
 
 	PRIMARY KEY(id),
 	INDEX (big_int_col)
@@ -63,7 +53,7 @@ CREATE TABLE sbtest1 (
     end
 
     local query = [[INSERT INTO sbtest1
-(id, tiny_int_col, unsigned_tiny_int_col, small_int_col, unsigned_small_int_col, medium_int_col, unsigned_medium_int_col, int_col, unsigned_int_col, big_int_col, unsigned_big_int_col, decimal_col, float_col, double_col, bit_col, char_col, var_char_col, enum_col, set_col, date_col, time_col, datetime_col, timestamp_col, year_col)
+(id, tiny_int_col, unsigned_tiny_int_col, small_int_col, unsigned_small_int_col, medium_int_col, unsigned_medium_int_col, int_col, unsigned_int_col, big_int_col, unsigned_big_int_col, float_col, double_col)
 VALUES
 ]]
 
@@ -72,7 +62,7 @@ VALUES
 
     con:bulk_insert_init(query)
     for i = 1, sysbench.opt.table_size do
-        local row_values = "(" .. i .. "," ..                                             -- id
+        local row_values = "(" .. i .. "," ..                                  -- id
             math.random(-128, 127) .. "," ..                                   -- tiny_int_col
             math.random(0, 255) .. "," ..                                      -- unsigned_tiny_int_col
             math.random(-32768,  32767) .. "," ..                              -- small_int_col
@@ -83,19 +73,8 @@ VALUES
             math.random(0, 4294967295) .. "," ..                               -- unsigned_int_col
             math.random(-4611686018427387904, 4611686018427387903) .. "," ..   -- big_int_col
             math.random(0, 9223372036854775807) .. "," ..                      -- unsigned_big_int_col
-            math.random() .. "," ..                                                    -- decimal_col
-            math.random() .. "," ..                                                    -- float_col
-            math.random() .. "," ..                                                    -- double_col
-            math.random(0, 1) .. "," ..                                        -- bit_col
-            "'" .. string.char(math.random(0x30, 0x5A)) .. "'" .. "," ..          -- char_col
-            "'" .. str_vals[math.random(1, 3)] .. "'" .. "," ..                -- var_char_col
-            "'" .. str_vals[math.random(1, 3)] .. "'" .. "," ..                -- enum_col
-            "'" .. str_vals[math.random(1, 3)] .. "'" .. "," ..                -- set_col
-            "'2020-0" .. math.random(1, 9) .. "-" .. math.random(10, 28) .. "'" .. "," .. -- date_col
-            "'0" .. math.random(1, 9) .. ":" .. math.random(10, 59) .. ":00'" .. "," .. -- time_col
-            "'2020-0" .. math.random(1, 9) .. "-" .. math.random(10, 28) .. " 0" .. math.random(1, 9) .. ":" .. math.random(10, 59) .. ":00'" .. "," .. -- datetime_col
-            "'2020-0" .. math.random(1, 9) .. "-" .. math.random(10, 28) .. " 0" .. math.random(1, 9) .. ":" .. math.random(10, 59) .. ":00'" .. "," .. -- timestamp_col
-            math.random(1901, 2155) .. ")"                                     -- year_col
+            math.random() .. "," ..                                            -- float_col
+            math.random() .. ")"                                               -- double_col
 
         con:bulk_insert_next(row_values)
     end
