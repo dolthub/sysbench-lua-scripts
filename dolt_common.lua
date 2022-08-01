@@ -63,7 +63,7 @@ CREATE TABLE sbtest1 (
     end
 
     local query = [[INSERT INTO sbtest1
-(id, tiny_int_col, unsigned_tiny_int_col, small_int_col, unsigned_small_int_col, medium_int_col, unsigned_medium_int_col, int_col, unsigned_int_col, big_int_col, unsigned_big_int_col, decimal_col, float_col, double_col, bit_col, char_col, var_char_col, tiny_text_col, text_col, medium_text_col, long_text_col, enum_col, set_col, date_col, time_col, datetime_col, timestamp_col, year_col)
+(id, tiny_int_col, unsigned_tiny_int_col, small_int_col, unsigned_small_int_col, medium_int_col, unsigned_medium_int_col, int_col, unsigned_int_col, big_int_col, unsigned_big_int_col, decimal_col, float_col, double_col, bit_col, char_col, var_char_col, enum_col, set_col, date_col, time_col, datetime_col, timestamp_col, year_col)
 VALUES
 ]]
 
@@ -89,10 +89,6 @@ VALUES
             math.random(0, 1) .. "," ..                                        -- bit_col
             "'" .. string.char(math.random(0x30, 0x5A)) .. "'" .. "," ..          -- char_col
             "'" .. str_vals[math.random(1, 3)] .. "'" .. "," ..                -- var_char_col
-            "'" .. str_vals[math.random(1, 3)] .. "'" .. "," ..                -- tiny_text_col
-            "'" .. str_vals[math.random(1, 3)] .. "'" .. "," ..                -- text_col
-            "'" .. str_vals[math.random(1, 3)] .. "'" .. "," ..                -- medium_text_col
-            "'" .. str_vals[math.random(1, 3)] .. "'" .. "," ..                -- long_text_col
             "'" .. str_vals[math.random(1, 3)] .. "'" .. "," ..                -- enum_col
             "'" .. str_vals[math.random(1, 3)] .. "'" .. "," ..                -- set_col
             "'2020-0" .. math.random(1, 9) .. "-" .. math.random(10, 28) .. "'" .. "," .. -- date_col
