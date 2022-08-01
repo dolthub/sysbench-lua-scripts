@@ -11,7 +11,7 @@ function thread_init()
     drv = sysbench.sql.driver()
     con = drv:connect()
 
-    stmt = con:prepare('select a.* from sbtest1 a, sbtest1 b where a.id = b.id limit 500')
+    stmt = con:prepare('select a.id, a.small_int_col from sbtest1 a, sbtest1 b where a.id = b.id limit 500')
 end
 
 function thread_done()
