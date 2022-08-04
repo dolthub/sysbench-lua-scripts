@@ -1,26 +1,26 @@
-require('types_common')
+require("types_common")
 
 function prepare()
     sysbench.opt.threads = 1
     drv = sysbench.sql.driver()
     con = drv:connect()
-    create_types_table(drv, con)
+    create_types_table(drv, con, 1)
 end
 
 function thread_init()
-    drv = sysbench.sql.driver()
-    con = drv:connect()
-
-    stmt = con:prepare('SELECT * FROM sbtest1 WHERE small_int_col > 0')
+  drv = sysbench.sql.driver()
+  con = drv:connect()
 end
 
 function thread_done()
-    stmt:close()
     con:disconnect()
 end
 
 function event()
-    stmt:execute()
+    local id = sysbench.rand.default(1, 10000)
+    con:query(string.format("DELETE FROM sbtest1 WHERE id = %d", id))
+    local row_values = row_for_id(id)
+    con:query(string.format("INSERT INTO sbtest1 VALUES %s", row_values))
 end
 
 function cleanup()
