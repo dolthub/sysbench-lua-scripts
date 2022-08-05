@@ -1,4 +1,3 @@
-
 require("dolt_common")
 
 dolt_prepare = prepare

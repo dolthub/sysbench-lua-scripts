@@ -1,17 +1,47 @@
+function init()
+    assert(event ~= nil, "this script is meant to be included by other OLTP scripts and should not be called directly.")
+end
+
+if sysbench.cmdline.command == nil then
+    error("Command is required. Supported commands: prepare, warmup, run, cleanup, help")
+end
+
 sysbench.cmdline.options = {
     table_size = {"Number of rows per table", 10000},
     create_table_options = {"Extra CREATE TABLE options", ""},
 }
 
-function create_types_table(drv, con)
-   local id_index_def, id_def
-   local engine_def = ""
-   local extra_table_options = ""
-   local query
+local t = sysbench.sql.type
 
-   print("Creating table 'sbtest1'...")
+function thread_init()
+    drv = sysbench.sql.driver()
+    con = drv:connect()
+end
 
-   query = [[
+function thread_done()
+    con:disconnect()
+end
+
+function cleanup()
+    local drv = sysbench.sql.driver()
+    local con = drv:connect()
+
+    print("Dropping table 'sbtest1'")
+    con:query("DROP TABLE IF EXISTS sbtest1")
+end
+
+function cmd_prepare()
+    local drv = sysbench.sql.driver()
+    local con = drv:connect()
+
+    local id_index_def, id_def
+    local engine_def = ""
+    local extra_table_options = ""
+    local query
+
+    print("Creating table 'sbtest1'...")
+
+    query = [[
 CREATE TABLE sbtest1 (
     id INT NOT NULL,
     tiny_int_col TINYINT NOT NULL,
@@ -108,3 +138,7 @@ function row_for_id(id)
         "'2020-0" .. math.random(1, 9) .. "-" .. math.random(10, 28) .. " 0" .. math.random(1, 9) .. ":" .. math.random(10, 59) .. ":00'" .. "," .. -- timestamp_col
         math.random(1901, 2155) .. ")"                                     -- year_col
 end
+
+sysbench.cmdline.commands = {
+    prepare = {cmd_prepare, sysbench.cmdline.PARALLEL_COMMAND},
+}
