@@ -20,10 +20,10 @@ benchmark_dolt() {
     server_log_dir=$2
     script_log_dir=$3
     port=$4
-    scripts=('oltp_read_only' 'oltp_point_select')
+    #scripts=('oltp_read_only' 'oltp_point_select')
     #scripts=('oltp_delete_insert' 'groupby_scan' 'covering_index_scan' 'index_join_scan' 'index_scan' 'table_scan' 'types_delete_insert' 'types_table_scan')
-    #scripts=('oltp_read_only' 'oltp_point_select' 'select_random_points' 'select_random_ranges' 'covering_index_scan' 'index_scan' 'table_scan' 'groupby_scan' 'index_join_scan')
-    #writeTests=('oltp_read_write', 'oltp_update_index', 'oltp_update_non_index', 'oltp_insert', 'bulk_insert', 'oltp_write_only', 'oltp_delete_insert')
+    scripts=('oltp_read_only' 'oltp_point_select' 'select_random_points' 'select_random_ranges' 'covering_index_scan' 'index_scan' 'table_scan' 'groupby_scan' 'index_join_scan')
+    #writeTests=('oltp_read_write' 'oltp_update_index' 'oltp_update_non_index' 'oltp_insert' 'bulk_insert' 'oltp_write_only' 'oltp_delete_insert')
 
     dolt_bin="$server_log_dir/dolt_$doltv"
     install_dolt_version $doltv $dolt_bin
@@ -156,10 +156,9 @@ collect_summary() {
 }
 
 run () {
-    # get versions from ENV variables
-    # get scripts from env variables
-
-    versions=('main' 'v0.40.21')
+    #TODO  get versions from ENV variables
+    #TODO get scripts from env variables
+    versions=('v0.40.21' 'v0.40.20')
 
     tmp_dir=`mktemp -d`
     echo "output dir: $tmp_dir"
@@ -189,13 +188,6 @@ run () {
         echo "summary for $dolt_version at $version_summary"
         cat $version_summary
     done
-    # creating working dir, port, call benchmark
-    # histogram outputs in histograms/{script_name}
-    # consolidate histograms
-    # logs in logs/{script_name}
-    # push results to S3? just email?
 }
 
-VERSIONS=('main')
-scripts="oltp_delete_insert groupby_scan"
-run $versions $scripts
+run
