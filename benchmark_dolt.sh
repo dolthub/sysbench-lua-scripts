@@ -137,7 +137,7 @@ for i, row in enumerate(csv.reader(open(file), delimiter=',')):
         values.append(float(row[0]))
 stdev = statistics.stdev(values)
 mean = statistics.mean(values)
-print(f'{name},{mean},{stdev}')
+print(f'{name},{mean:.2f},{stdev:.2f}')
 "
 
 collect_summary() {
