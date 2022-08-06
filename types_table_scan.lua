@@ -1,10 +1,10 @@
 require('types_common')
 
+dolt_prepare = prepare
+
 function prepare()
     sysbench.opt.threads = 1
-    drv = sysbench.sql.driver()
-    con = drv:connect()
-    create_types_table(drv, con)
+    dolt_prepare()
 end
 
 function thread_init()
@@ -22,11 +22,3 @@ end
 function event()
     stmt:execute()
 end
-
-function cleanup()
-    local drv = sysbench.sql.driver()
-    local con = drv:connect()
-    print("Dropping table 'sbtest1'")
-    con:query("DROP TABLE IF EXISTS sbtest1")
-end
-
