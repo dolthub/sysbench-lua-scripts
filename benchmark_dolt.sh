@@ -1,13 +1,26 @@
 #!/bin/bash
 set -eo pipefail
+#set -x
 
+# TODO: in CI this would need to install Dolt or the lua scripts
 DOLT_ROOT=/Users/max-hoffman/go/src/github.com/dolthub/dolt
 SCRIPTS_ROOT=/Users/max-hoffman/go/src/github.com/dolthub/dolt/go/performance/scripts/sysbench-lua-scripts
+
 ROOT_USER=user
 ROOT_PASS=pass
 ROOT_TABLE_SIZE=10000
 ROOT_TIMEOUT=30
 ROOT_EVENTS=200
+ROOT_PORT=3309
+
+reads='["oltp_read_only" "oltp_point_select" "select_random_points" "select_random_ranges" "covering_index_scan" "index_scan" "table_scan" "groupby_scan" "index_join_scan"]'
+writes='["oltp_read_write" "oltp_update_index" "oltp_update_non_index" "oltp_insert" "bulk_insert" "oltp_write_only" "oltp_delete_insert"]'
+
+DEFAULT_SCRIPTS='["oltp_read_only", "oltp_point_select"]'
+DEFAULT_VERSIONS='["main"]'
+
+SCRIPTS="${INPUT_SCRIPTS:-$DEFAULT_SCRIPTS}"
+VERSIONS="${INPUT_VERSIONS:-$DEFAULT_VERSIONS}"
 
 benchmark_dolt() {
     # version, wd, port
@@ -20,31 +33,28 @@ benchmark_dolt() {
     server_log_dir=$2
     script_log_dir=$3
     port=$4
-    #scripts=('oltp_read_only' 'oltp_point_select')
-    #scripts=('oltp_delete_insert' 'groupby_scan' 'covering_index_scan' 'index_join_scan' 'index_scan' 'table_scan' 'types_delete_insert' 'types_table_scan')
-    scripts=('oltp_read_only' 'oltp_point_select' 'select_random_points' 'select_random_ranges' 'covering_index_scan' 'index_scan' 'table_scan' 'groupby_scan' 'index_join_scan')
-    #writeTests=('oltp_read_write' 'oltp_update_index' 'oltp_update_non_index' 'oltp_insert' 'bulk_insert' 'oltp_write_only' 'oltp_delete_insert')
 
     dolt_bin="$server_log_dir/dolt_$doltv"
     install_dolt_version $doltv $dolt_bin
 
+    # inline start_server until we can get pid from server lock
     server_log="$server_log_dir/$doltv.log"
     cd $wd
-    dolt init
-    dolt sql -q "create database sbtest"
-    start_server $dolt_bin $wd $port $server_log
+    dolt init >> "$server_log"
+    dolt sql -q "create database sbtest" >>"$server_log"
+    $dolt_bin sql-server -l trace --user=$ROOT_USER --password=$ROOT_PASS --port "$port" &>"$server_log" &
+    sleep 1
+    pid="$!"
 
-    #SERVER_PID="$!"
-
-    END=${#scripts[@]}
-    for ((i=0;i<=END-1;i++)); do
-        script_name=${scripts[$i]}
+    echo "$SCRIPTS" | jq -c ".[${i}]" | while read s; do
+        #script_name="${s}"
+        #script_name=${scripts[$i]}
+        script_name=$(echo $s | sed -e 's/^"//' -e 's/"$//' )
         script_log="$script_log_dir/$script_name.log"
         echo "script: $script_name"
         run_script $script_name $script_log $port
     done
-
-    #kill_server $SERVER_PID
+    kill_server $pid
 }
 
 install_dolt_version() {
@@ -72,6 +82,7 @@ start_server() {
     server_log=$4
 
     $dolt_bin sql-server -l trace --user=$ROOT_USER --password=$ROOT_PASS --port "$port" &>"$server_log" &
+    RET_SERVER_PID="$!"
     sleep 1
 }
 
@@ -104,10 +115,9 @@ run_script() {
       --time=$ROOT_TIMEOUT \
       --histogram=on
     "
-    pwd
-    sysbench $default_opts "$script_name" prepare
-    sysbench $default_opts "$script_name" run > "$script_log"
-    sysbench $default_opts "$script_name" cleanup
+    sysbench $default_opts "$script_name" prepare >> "$script_log"
+    sysbench $default_opts "$script_name" run >> "$script_log"
+    sysbench $default_opts "$script_name" cleanup >> "$script_log"
 }
 
 format_hist() {
@@ -155,28 +165,58 @@ collect_summary() {
     done
 }
 
-run () {
-    #TODO  get versions from ENV variables
-    #TODO get scripts from env variables
-    versions=('v0.40.21' 'v0.40.20')
+list_running_servers() {
+    running=$(ps aux | grep "$ROOT_PORT.*dolt" )
+    echo "running dolt servers:"
+    echo "$running"
+}
 
+format_markdown() {
+    if [ "$#" -ne 2 ]; then
+        echo "format_markdown expects 2 arguments, found ${$#}"
+        echo "usage: format_markdown [csv file] [markdown file]"
+        exit 1
+    fi
+    csv=$1
+    md=$2
+
+    cnt=$(head -1 $csv | tr -cd , | wc -c)
+    header2='|'
+    for i in $(seq 0 $cnt); do
+      header2="$header2 --- |"
+    done
+
+    head -1 $csv \
+      | sed 's/^/|\ /g' \
+      | sed 's/,/\ |\ /g' \
+      | sed 's/$/\ |/g' >> $md
+    echo $header2 >> $md
+    tail +2 $csv \
+      | sed 's/^/|\ /g' \
+      | sed 's/,/\ |\ /g' \
+      | sed 's/$/\ |/g' >> $md
+}
+
+run () {
     tmp_dir=`mktemp -d`
     echo "output dir: $tmp_dir"
 
     summary_dir="$tmp_dir/summary"
     mkdir -p $summary_dir
 
-    VERLEN=${#versions[@]}
-    for ((j=0;j<=VERLEN-1;j++)); do
-        dolt_version=${versions[$j]}
+    trap list_running_servers EXIT
+
+    echo "$VERSIONS" | jq -c ".[${i}]" | while read v; do
+        dolt_version=$(echo $v | sed -e 's/^"//' -e 's/"$//' )
         wd="$tmp_dir/$dolt_version"
         mkdir -p $wd
         cp $SCRIPTS_ROOT/*.lua "$wd/"
+
         server_logs="$wd/server_logs/"
         script_logs="$wd/script_logs/"
         mkdir -p $server_logs $script_logs
-        port=3309
 
+        port=$ROOT_PORT
         benchmark_dolt "$dolt_version" "$server_logs" "$script_logs" "$port"
 
         hist_logs="$wd/hist_logs"
@@ -185,8 +225,12 @@ run () {
 
         version_summary="$summary_dir/$dolt_version.csv"
         collect_summary $hist_logs $version_summary
+
+        version_md="$summary_dir/$dolt_version.md"
+        format_markdown $version_summary $version_md
+
         echo "summary for $dolt_version at $version_summary"
-        cat $version_summary
+        cat $version_md
     done
 }
 
