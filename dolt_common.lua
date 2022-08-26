@@ -58,6 +58,20 @@ CREATE TABLE sbtest1 (
 
     con:query(create_query)
 
+    print("Creating table 'sbtest2'")
+
+    local create_query = string.format( [[
+CREATE TABLE sbtest2 (
+    id INT NOT NULL,
+    int_col INT NOT NULL,
+    unsigned_int_col INT UNSIGNED NOT NULL,
+    char_col CHAR NOT NULL,
+    var_char_col VARCHAR(64) NOT NULL,
+    PRIMARY KEY(id)
+); ]] .. sysbench.opt.create_table_options)
+
+    con:query(create_query)
+
     if (sysbench.opt.table_size > 0) then
         print(string.format("Inserting %d records into 'sbtest1'", sysbench.opt.table_size))
     end
@@ -101,6 +115,26 @@ VALUES
     end
     con:bulk_insert_done()
 
+    if (sysbench.opt.table_size > 0) then
+        print(string.format("Inserting %d records into 'sbtest2'", sysbench.opt.table_size))
+    end
+
+    local query = [[INSERT INTO sbtest2 (id, int_col, unsigned_int_col, char_col, var_char_col) VALUES ]]
+
+    local str_vals = {"val0", "val1", "val2"}
+    math.randomseed(0)
+
+    con:bulk_insert_init(query)
+    for i = 1, sysbench.opt.table_size do
+        local row_values = "(" .. i .. "," ..                             -- id
+            math.random(0, 10000) .. "," ..                               -- int_col (value range matches sbtest1.id)
+            math.random(0, 4294967295) .. "," ..                          -- unsigned_int_col
+            "'" .. string.char(math.random(0x30, 0x5A)) .. "'" .. "," ..  -- char_col
+            "'" .. str_vals[math.random(1, 3)] .. "'" .. ")"              -- var_char_col
+        con:bulk_insert_next(row_values)
+    end
+    con:bulk_insert_done()
+
 end
 
 
@@ -127,6 +161,8 @@ function cleanup()
 
     print("Dropping table 'sbtest1'")
     con:query("DROP TABLE IF EXISTS sbtest1")
+    print("Dropping table 'sbtest2'")
+    con:query("DROP TABLE IF EXISTS sbtest2")
 end
 
 
