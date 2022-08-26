@@ -67,8 +67,7 @@ CREATE TABLE sbtest2 (
     unsigned_int_col INT UNSIGNED NOT NULL,
     char_col CHAR NOT NULL,
     var_char_col VARCHAR(64) NOT NULL,
-    PRIMARY KEY(id),
-    INDEX (int_col)
+    PRIMARY KEY(id)
 ); ]] .. sysbench.opt.create_table_options)
 
     con:query(create_query)
