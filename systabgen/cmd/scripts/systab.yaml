@@ -1,0 +1,78 @@
+scripts:
+- name: dolt_diff_table_commit_filter
+  query: "select * from dolt_diff_xy where to_commit = (select commit_hash from dolt_log limit 1 offset 599)"
+  commits: 600
+  diffsPerCommit: 20
+- name: dolt_diffs_commit_filter
+  query: "select * from dolt_diff where commit_hash = (select commit_hash from dolt_log limit 1 offset 599)"
+  commits: 600
+  diffsPerCommit: 20
+- name: dolt_history_commit_filter
+  query: "select count(*) from dolt_history_xy where commit_hash = (select commit_hash from dolt_log limit 1 offset 29)"
+  commits: 30
+  diffsPerCommit: 20
+- name: dolt_log_commit_filter
+  query: "select * from dolt_log where commit_hash = (select commit_hash from dolt_log limit 1 offset 599)"
+  commits: 600
+  diffsPerCommit: 20
+- name: dolt_commits_commit_filter
+  query: "select * from dolt_commits where commit_hash = (select commit_hash from dolt_log limit 1 offset 599)"
+  commits: 600
+  diffsPerCommit: 20
+- name: dolt_commit_ancestors_commit_filter
+  query: "select * from dolt_commit_ancestors where commit_hash = (select commit_hash from dolt_log limit 1 offset 599)"
+  commits: 600
+  diffsPerCommit: 20
+- name: dolt_diff_log_join_on_commit
+  query: "select * from dolt_diff_xy join dolt_log on commit_hash = to_commit"
+  commits: 600
+  diffsPerCommit: 20
+# dummy
+- name: dolt_diff_table_commit_filter_dummy
+  query: "select * from dd_xy where to_commit = (select commit_hash from dl limit 1 offset 599)"
+  commits: 600
+  diffsPerCommit: 20
+  dummy:
+    dolt_diff_xy: dd_xy
+    dolt_log: dl
+- name: dolt_diffs_commit_filter_dummy
+  query: "select * from dd where commit_hash = (select commit_hash from dl limit 1 offset 599)"
+  commits: 600
+  diffsPerCommit: 20
+  dummy:
+    dolt_diff: dd
+    dolt_log: dl
+- name: dolt_history_commit_filter_dummy
+  query: "select count(*) from dh_xy where commit_hash = (select commit_hash from dl limit 1 offset 29)"
+  commits: 30
+  diffsPerCommit: 20
+  dummy:
+    dolt_history_xy: dh_xy
+    dolt_log: dl
+- name: dolt_log_commit_filter_dummy
+  query: "select * from dl where commit_hash = (select commit_hash from dl limit 1 offset 599)"
+  commits: 600
+  diffsPerCommit: 20
+  dummy:
+    dolt_log: dl
+- name: dolt_commits_commit_filter_dummy
+  query: "select * from dc where commit_hash = (select commit_hash from dolt_log limit 1 offset 599)"
+  commits: 600
+  diffsPerCommit: 20
+  dummy:
+    dolt_commits: dc
+    dolt_log: dl
+- name: dolt_commit_ancestors_commit_filter_dummy
+  query: "select * from dca where commit_hash = (select commit_hash from dolt_log limit 1 offset 599)"
+  commits: 600
+  diffsPerCommit: 20
+  dummy:
+    dolt_commit_ancestors: dca
+    dolt_log: dl
+- name: dolt_diff_log_join_on_commit_dummy
+  query: "select * from dd_xy join dl on commit_hash = to_commit"
+  commits: 600
+  diffsPerCommit: 20
+  dummy:
+    dolt_diff_xy: dd_xy
+    dolt_log: dl
