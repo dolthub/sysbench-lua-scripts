@@ -12,7 +12,7 @@ import (
 	"time"
 )
 
-//go:generate go run ../main.go -out ../../../gen/ systabgen ../scripts/systab.yaml
+//go:generate go run ../main.go -out ../../../gen/ systab ../spec/systab.yaml
 
 type ScriptDef struct {
 	Name           string            `yaml:"name"`
