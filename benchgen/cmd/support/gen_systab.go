@@ -337,6 +337,7 @@ func (g *ScriptGen) genPrepareDummy(define ScriptDef) {
 			fmt.Fprintf(&sch, "  commit_date datetime,\n")
 			fmt.Fprintf(&sch, "  x int,\n")
 			fmt.Fprintf(&sch, "  y varchar(20),\n")
+			fmt.Fprintf(&sch, "  primary key (commit_hash, x, y),\n")
 			fmt.Fprintf(&sch, "  index (commit_hash)\n")
 			fmt.Fprintf(&sch, ")\n")
 			fmt.Fprintf(&sch, "  ]])\n")
