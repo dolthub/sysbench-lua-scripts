@@ -1,4 +1,4 @@
-require("types_common")
+require("types_common_postgres")
 
 dolt_prepare = prepare
 
