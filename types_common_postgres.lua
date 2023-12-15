@@ -41,48 +41,49 @@ function cmd_prepare()
 
     print("Creating table 'sbtest1'...")
 
+    -- postgres doesn't have unsigned integer types, but to keep the performance comparison as close
+    -- to MySQL as possible, we include signed versions of those columns
     query = [[
 CREATE TABLE sbtest1 (
-    id INT NOT NULL,
-    tiny_int_col TINYINT NOT NULL,
-    unsigned_tiny_int_col TINYINT UNSIGNED NOT NULL,
+    id INT PRIMARY KEY NOT NULL,
+    tiny_int_col SMALLINT NOT NULL,
+    unsigned_tiny_int_col SMALLINT NOT NULL,
     small_int_col SMALLINT NOT NULL,
-    unsigned_small_int_col SMALLINT UNSIGNED NOT NULL,
-    medium_int_col MEDIUMINT NOT NULL,
-    unsigned_medium_int_col MEDIUMINT UNSIGNED NOT NULL,
+    unsigned_small_int_col SMALLINT NOT NULL,
+    medium_int_col INT NOT NULL,
+    unsigned_medium_int_col INT NOT NULL,
     int_col INT NOT NULL,
-    unsigned_int_col INT UNSIGNED NOT NULL,
+    unsigned_int_col INT NOT NULL,
     big_int_col BIGINT NOT NULL,
-    unsigned_big_int_col BIGINT UNSIGNED NOT NULL,
+    unsigned_big_int_col BIGINT NOT NULL,
     decimal_col DECIMAL NOT NULL,
     float_col FLOAT NOT NULL,
-    double_col DOUBLE NOT NULL,
+    double_col FLOAT(53) NOT NULL,
     bit_col BIT NOT NULL,
     char_col CHAR NOT NULL,
     var_char_col VARCHAR(64) NOT NULL,
-    tiny_text_col TINYTEXT NOT NULL,
+    tiny_text_col TEXT NOT NULL,
     text_col TEXT NOT NULL,
-    medium_text_col MEDIUMBLOB NOT NULL,
-    long_text_col LONGTEXT NOT NULL,
-    tiny_blob_col TINYBLOB NOT NULL,
-    blob_col BLOB NOT NULL,
-    medium_blob_col MEDIUMBLOB NOT NULL,
-    long_blob_col LONGBLOB NOT NULL,
+    medium_text_col TEXT NOT NULL,
+    long_text_col TEXT NOT NULL,
+    tiny_blob_col BYTEA NOT NULL,
+    blob_col BYTEA NOT NULL,
+    medium_blob_col BYTEA NOT NULL,
+    long_blob_col BYTEA NOT NULL,
     json_col JSON NOT NULL,
     geom_col GEOMETRY NOT NULL,
-    enum_col ENUM('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13') NOT NULL,
-    set_col SET('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13') NOT NULL,
+    enum_col VARCHAR(5) CHECK (enum_col IN ('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13')) NOT NULL,
+    set_col VARCHAR(5) CHECK (set_col IN ('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13')) NOT NULL,
     date_col DATE NOT NULL,
     time_col TIME NOT NULL,
-    datetime_col DATETIME NOT NULL,
+    datetime_col TIMESTAMP NOT NULL,
     timestamp_col TIMESTAMP NOT NULL,
-    year_col YEAR NOT NULL,
-
-    PRIMARY KEY(id),
-    INDEX (big_int_col)
+    year_col SMALLINT NOT NULL
 ) ]]
 
-   con:query(query)
+    con:query(query)
+
+    con:query("CREATE INDEX idx_big_int_col ON sbtest1(big_int_col);")
 
     local query = [[INSERT INTO sbtest1
 (id, tiny_int_col, unsigned_tiny_int_col, small_int_col, unsigned_small_int_col, medium_int_col, unsigned_medium_int_col, int_col, unsigned_int_col, big_int_col, unsigned_big_int_col, decimal_col, float_col, double_col, bit_col, char_col, var_char_col, tiny_text_col, text_col, medium_text_col, long_text_col, tiny_blob_col, blob_col, medium_blob_col, long_blob_col, json_col, geom_col, enum_col, set_col, date_col, time_col, datetime_col, timestamp_col, year_col)
@@ -103,21 +104,22 @@ end
 function row_for_id(id)
     math.randomseed(0)
     local str_vals = {"val0", "val1", "val2", "val3", "val4", "val5", "val6", "val7", "val8", "val9", "val10", "val11", "val12", "val13"}
+
     return "(" .. id .. "," ..                                             -- id
         math.random(-128, 127) .. "," ..                                   -- tiny_int_col
-        math.random(0, 255) .. "," ..                                      -- unsigned_tiny_int_col
+        math.random(-128, 127) .. "," ..                                      -- unsigned_tiny_int_col
         math.random(-32768,  32767) .. "," ..                              -- small_int_col
-        math.random(0, 65535) .. "," ..                                    -- unsigned_small_int_col
+        math.random(-32768,  32767) .. "," ..                                    -- unsigned_small_int_col
         math.random(-8388608, 8388607) .. "," ..                           -- medium_int_col
-        math.random(0, 16777215) .. "," ..                                 -- unsigned_medium_int_col
+        math.random(-8388608, 8388607) .. "," ..                                 -- unsigned_medium_int_col
         math.random(-2147483648, 2147483647) .. "," ..                     -- int_col
-        math.random(0, 4294967295) .. "," ..                               -- unsigned_int_col
+        math.random(-2147483648, 2147483647) .. "," ..                               -- unsigned_int_col
         math.random(-4611686018427387904, 4611686018427387903) .. "," ..   -- big_int_col
-        math.random(0, 9223372036854775807) .. "," ..                      -- unsigned_big_int_col
+        math.random(-4611686018427387904, 4611686018427387903) .. "," ..                      -- unsigned_big_int_col
         math.random() .. "," ..                                                    -- decimal_col
         math.random() .. "," ..                                                    -- float_col
         math.random() .. "," ..                                                    -- double_col
-        math.random(0, 1) .. "," ..                                        -- bit_col
+        "'" .. math.random(0, 1) .. "'," ..                                        -- bit_col
         "'" .. string.char(math.random(0x30, 0x5A)) .. "'" .. "," ..          -- char_col
         "'" .. str_vals[math.random(1, 13)] .. "'" .. "," ..                -- var_char_col
         "'" .. str_vals[math.random(1, 13)] .. "'" .. "," ..                -- tiny_text_col
