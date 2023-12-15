@@ -11,7 +11,7 @@ function thread_init()
     drv = sysbench.sql.driver()
     con = drv:connect()
 
-    stmt = con:prepare('SELECT year_col, count(year_col), max(big_int_col), avg(small_int_col) FROM sbtest1 WHERE big_int_col > 0 GROUP BY set_col ORDER BY year_col')
+    stmt = con:prepare('SELECT year_col, count(year_col), max(big_int_col), avg(small_int_col) FROM sbtest1 WHERE big_int_col > 0 GROUP BY year_col, set_col ORDER BY year_col')
 end
 
 function thread_done()
