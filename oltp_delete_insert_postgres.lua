@@ -75,18 +75,19 @@ function create_table(drv, con, table_num)
 
    print(string.format("Creating table 'sbtest%d'...", table_num))
 
+   -- MySQL has auto_increment for the ID column
    query = [[
 CREATE TABLE sbtest1 (
-  id int NOT NULL AUTO_INCREMENT,
+  id int NOT NULL,
   k INTEGER DEFAULT '0' NOT NULL,
   c CHAR(120) DEFAULT '' NOT NULL,
   pad CHAR(60) DEFAULT '' NOT NULL,
-  PRIMARY KEY (id),
-  KEY k_1 (k)
+  PRIMARY KEY (id)
 ) ]]
 
    con:query(query)
-
+   con:query("create index k_1 on sbtest1(k)")
+   
    query = "INSERT INTO sbtest" .. table_num .. "(id, k, c, pad) VALUES"
    con:bulk_insert_init(query)
 
