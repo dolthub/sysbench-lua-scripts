@@ -2,8 +2,13 @@
 
 run_benchmark() {
     benchmark_name=$1
-    sysbench_command="sysbench --db-driver=pgsql --pgsql-host=0.0.0.0 --pgsql-password=sbtest "
+ #   sysbench_command="sysbench --db-driver=pgsql --pgsql-host=0.0.0.0 --pgsql-user=doltgres --db-ps-mode=disable --percentile=50 "
+    sysbench_command="sysbench --db-driver=pgsql --pgsql-host=0.0.0.0 --pgsql-password=sbtest --db-ps-mode=disable --percentile=50"
+
+    echo "##################################"
     echo "Running benchmark: $benchmark_name"
+    echo "##################################"
+    
     $sysbench_command $benchmark_name prepare
     $sysbench_command $benchmark_name run
     $sysbench_command $benchmark_name cleanup
@@ -21,7 +26,7 @@ benchmarks=(
     select_random_ranges
     table_scan_postgres
     types_table_scan_postgres
-    oltp_delete_insert
+    oltp_delete_insert_postgres
     oltp_insert
     oltp_read_write
     oltp_update_index
