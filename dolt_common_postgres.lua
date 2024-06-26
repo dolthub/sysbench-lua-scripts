@@ -27,6 +27,7 @@ function cmd_prepare()
 
     -- postgres doesn't have unsigned integer types, but to keep the performance comparison as close
     -- to MySQL as possible, we include signed versions of those columns
+    -- https://github.com/dolthub/doltgresql/issues/448
     local create_query = string.format( [[
 CREATE TABLE sbtest1 (
     id INT NOT NULL PRIMARY KEY,
@@ -46,8 +47,8 @@ CREATE TABLE sbtest1 (
     bit_col BIT NOT NULL,
     char_col CHAR NOT NULL,
     var_char_col VARCHAR(64) NOT NULL,
-    enum_col VARCHAR(5) CHECK (enum_col IN ('val0', 'val1', 'val2')) NOT NULL,
-    set_col VARCHAR(5) CHECK (set_col IN ('val0', 'val1', 'val2')) NOT NULL,
+    enum_col VARCHAR(5), -- CHECK (enum_col IN ('val0', 'val1', 'val2')) NOT NULL,
+    set_col VARCHAR(5), -- CHECK (set_col IN ('val0', 'val1', 'val2')) NOT NULL,
     date_col DATE NOT NULL,
     time_col TIME NOT NULL,
     datetime_col TIMESTAMP NOT NULL,

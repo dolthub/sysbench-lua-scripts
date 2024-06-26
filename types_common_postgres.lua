@@ -43,6 +43,8 @@ function cmd_prepare()
 
     -- postgres doesn't have unsigned integer types, but to keep the performance comparison as close
     -- to MySQL as possible, we include signed versions of those columns
+    -- TODO: checks are disabled, re-enable when implemented
+    -- https://github.com/dolthub/doltgresql/issues/448
     query = [[
 CREATE TABLE sbtest1 (
     id INT PRIMARY KEY NOT NULL,
@@ -72,8 +74,8 @@ CREATE TABLE sbtest1 (
     long_blob_col BYTEA NOT NULL,
     json_col JSON NOT NULL,
     geom_col GEOMETRY NOT NULL,
-    enum_col VARCHAR(5) CHECK (enum_col IN ('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13')) NOT NULL,
-    set_col VARCHAR(5) CHECK (set_col IN ('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13')) NOT NULL,
+    enum_col VARCHAR(5), -- CHECK (enum_col IN ('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13')) NOT NULL,
+    set_col VARCHAR(5), -- CHECK (set_col IN ('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13')) NOT NULL,
     date_col DATE NOT NULL,
     time_col TIME NOT NULL,
     datetime_col TIMESTAMP NOT NULL,
