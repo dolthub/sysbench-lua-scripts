@@ -43,6 +43,10 @@ function cmd_prepare()
 
     -- postgres doesn't have unsigned integer types, but to keep the performance comparison as close
     -- to MySQL as possible, we include signed versions of those columns
+    -- TODO: checks are disabled, re-enable when implemented
+    -- Similar problem for geo (disabled)
+    -- and bit types (changed to varchar for now)
+    -- https://github.com/dolthub/doltgresql/issues/448
     query = [[
 CREATE TABLE sbtest1 (
     id INT PRIMARY KEY NOT NULL,
@@ -59,7 +63,8 @@ CREATE TABLE sbtest1 (
     decimal_col DECIMAL NOT NULL,
     float_col FLOAT NOT NULL,
     double_col FLOAT(53) NOT NULL,
-    bit_col BIT NOT NULL,
+--    bit_col BIT NOT NULL,
+    bit_col VARCHAR(64) NOT NULL,
     char_col CHAR NOT NULL,
     var_char_col VARCHAR(64) NOT NULL,
     tiny_text_col TEXT NOT NULL,
@@ -71,9 +76,9 @@ CREATE TABLE sbtest1 (
     medium_blob_col BYTEA NOT NULL,
     long_blob_col BYTEA NOT NULL,
     json_col JSON NOT NULL,
-    geom_col GEOMETRY NOT NULL,
-    enum_col VARCHAR(5) CHECK (enum_col IN ('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13')) NOT NULL,
-    set_col VARCHAR(5) CHECK (set_col IN ('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13')) NOT NULL,
+--    geom_col GEOMETRY NOT NULL,
+    enum_col VARCHAR(5), -- CHECK (enum_col IN ('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13')) NOT NULL,
+    set_col VARCHAR(5), -- CHECK (set_col IN ('val0', 'val1', 'val2', 'val3', 'val4', 'val5', 'val6', 'val7', 'val8', 'val9', 'val10', 'val11', 'val12', 'val13')) NOT NULL,
     date_col DATE NOT NULL,
     time_col TIME NOT NULL,
     datetime_col TIMESTAMP NOT NULL,
@@ -86,13 +91,44 @@ CREATE TABLE sbtest1 (
     con:query("CREATE INDEX idx_big_int_col ON sbtest1(big_int_col);")
 
     local query = [[INSERT INTO sbtest1
-(id, tiny_int_col, unsigned_tiny_int_col, small_int_col, unsigned_small_int_col, medium_int_col, unsigned_medium_int_col, int_col, unsigned_int_col, big_int_col, unsigned_big_int_col, decimal_col, float_col, double_col, bit_col, char_col, var_char_col, tiny_text_col, text_col, medium_text_col, long_text_col, tiny_blob_col, blob_col, medium_blob_col, long_blob_col, json_col, geom_col, enum_col, set_col, date_col, time_col, datetime_col, timestamp_col, year_col)
+(id, 
+tiny_int_col, 
+unsigned_tiny_int_col,
+ small_int_col,
+ unsigned_small_int_col,
+ medium_int_col,
+ unsigned_medium_int_col,
+ int_col,
+ unsigned_int_col,
+ big_int_col,
+ unsigned_big_int_col,
+ decimal_col,
+ float_col,
+ double_col,
+ bit_col,
+ char_col,
+ var_char_col,
+ tiny_text_col,
+ text_col,
+ medium_text_col,
+ long_text_col,
+ tiny_blob_col,
+ blob_col,
+ medium_blob_col,
+ long_blob_col,
+ json_col,
+-- geom_col,
+ enum_col,
+ set_col,
+ date_col,
+ time_col,
+ datetime_col,
+ timestamp_col,
+ year_col)
 VALUES
 ]]
 
-    local str_vals = {"val0", "val1", "val2", "val3", "val4", "val5", "val6", "val7", "val8", "val9", "val10", "val11", "val12", "val13"}
     math.randomseed(0)
-
     con:bulk_insert_init(query)
     for i = 1, sysbench.opt.table_size do
         local row_values = row_for_id(i)
@@ -131,7 +167,7 @@ function row_for_id(id)
         "'" .. str_vals[math.random(1, 13)] .. "'" .. "," ..                -- medium_blob_col
         "'" .. str_vals[math.random(1, 13)] .. "'" .. "," ..                -- long_blob_col
         "'{\"" .. str_vals[math.random(1, 13)] .. "\":1}'" .. "," ..            -- json_col
-        "ST_GeomFromText('Point(" .. math.random(1, 3) .. " " .. math.random(1,3) .. ")')" .. "," .. -- geom_col
+  --      "ST_GeomFromText('Point(" .. math.random(1, 3) .. " " .. math.random(1,3) .. ")')" .. "," .. -- geom_col
         "'" .. str_vals[math.random(1, 13)] .. "'" .. "," ..                -- enum_col
         "'" .. str_vals[math.random(1, 13)] .. "'" .. "," ..                -- set_col
         "'2020-0" .. math.random(1, 9) .. "-" .. math.random(10, 28) .. "'" .. "," .. -- date_col

@@ -2,13 +2,14 @@
 
 run_benchmark() {
     benchmark_name=$1
- #   sysbench_command="sysbench --db-driver=pgsql --pgsql-host=0.0.0.0 --pgsql-user=doltgres --db-ps-mode=disable --percentile=50 "
-    sysbench_command="sysbench --db-driver=pgsql --pgsql-host=0.0.0.0 --pgsql-password=sbtest --db-ps-mode=disable --percentile=50"
+    sysbench_command="sysbench --db-driver=pgsql --pgsql-host=0.0.0.0 --pgsql-user=doltgres --db-ps-mode=disable --percentile=50 "
+#    sysbench_command="sysbench --db-driver=pgsql --pgsql-host=0.0.0.0 --pgsql-password=sbtest --db-ps-mode=disable --percentile=50"
 
     echo "##################################"
     echo "Running benchmark: $benchmark_name"
     echo "##################################"
-    
+
+    $sysbench_command $benchmark_name cleanup
     $sysbench_command $benchmark_name prepare
     $sysbench_command $benchmark_name run
     $sysbench_command $benchmark_name cleanup
