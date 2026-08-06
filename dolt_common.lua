@@ -15,6 +15,7 @@ end
 sysbench.cmdline.options = {
     table_size = {"Number of rows per table", 10000},
     create_table_options = {"Extra CREATE TABLE options", ""},
+    auto_inc = {"unused", false},
 }
 
 -- Prepare the dataset. This command supports parallel execution, i.e. will
