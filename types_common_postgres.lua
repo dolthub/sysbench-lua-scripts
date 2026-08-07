@@ -9,6 +9,7 @@ end
 sysbench.cmdline.options = {
     table_size = {"Number of rows per table", 10000},
     create_table_options = {"Extra CREATE TABLE options", ""},
+    auto_inc = {"unused", false},
 }
 
 local t = sysbench.sql.type
